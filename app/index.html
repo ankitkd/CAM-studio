@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CamStudio Sphere Sketcher</title>
+  <link rel="stylesheet" href="styles.css?v=7">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">CAMSTUDIO</p>
+        <h1>Sphere sketcher</h1>
+      </div>
+      <div class="step"><span id="stepOneBadge" class="active">1</span> Draw path <i></i><span id="stepTwoBadge">2</span> Build mechanism</div>
+    </header>
+
+    <section class="workspace">
+      <aside class="tools" aria-label="Drawing tools">
+        <button class="tool active" id="drawTool" aria-pressed="true"><b>✎</b><span>Draw</span></button>
+        <button class="tool" id="orbitTool" aria-pressed="false"><b>↻</b><span>Rotate</span></button>
+        <div class="divider"></div>
+        <button class="tool" id="undoButton"><b>↶</b><span>Undo</span></button>
+        <button class="tool" id="closeButton"><b>○</b><span>Close</span></button>
+        <button class="tool danger" id="clearButton"><b>×</b><span>Clear</span></button>
+      </aside>
+
+      <div class="viewport" id="viewport">
+        <canvas id="sphereCanvas" aria-label="Interactive sphere for drawing a closed three-dimensional path"></canvas>
+        <div class="runtime-banner" id="runtimeBanner" hidden></div>
+        <div class="live-scale" id="liveScale">Estimated movement radius 150 mm</div>
+        <div class="preview-legend" id="previewLegend" hidden>
+          <span><i class="legend-cam"></i>Cam</span>
+          <span><i class="legend-groove"></i>Groove</span>
+          <span><i class="legend-follower"></i>Follower</span>
+          <span><i class="legend-foot"></i>Foot path</span>
+          <span><i class="legend-envelope"></i>Gait box</span>
+        </div>
+        <div class="gait-envelope" id="gaitEnvelopeBadge" hidden>Gait box —</div>
+        <div class="mode-hint" id="modeHint">Draw around the outward neutral marker</div>
+        <div class="orientation"><span class="axis x">X</span><span class="axis y">Y</span><span class="axis z">Z</span></div>
+      </div>
+
+      <aside class="inspector" id="drawPanel">
+        <section>
+          <h2>Path</h2>
+          <label>Name<input id="designName" value="my-insect" maxlength="40"></label>
+          <p class="field-help">Your current sketch and dimensions are saved automatically in this browser.</p>
+          <label>Estimated movement radius <span>mm</span><input id="sphereRadius" type="number" min="10" step="1" value="150" aria-describedby="legLengthHelp"></label>
+          <p class="field-help" id="legLengthHelp">An approximate size while drawing. You can set the exact leg length next.</p>
+          <label>Smoothing <span id="smoothValue">2</span><input id="smoothing" type="range" min="0" max="5" value="2"></label>
+          <label>Output samples<input id="sampleCount" type="number" min="36" max="1440" step="12" value="360"></label>
+        </section>
+        <section class="status-panel">
+          <div><span>Points</span><strong id="pointCount">0</strong></div>
+          <div><span>Motion envelope</span><strong id="motionEnvelope">—</strong></div>
+          <div><span>Sphere error</span><strong id="sphereError">0.000 mm</strong></div>
+          <div><span>Loop</span><strong id="loopStatus" class="waiting">Open</strong></div>
+        </section>
+      </aside>
+
+      <aside class="inspector" id="mechanismPanel" hidden>
+        <section>
+          <h2>Leg</h2>
+          <label>Final leg length <span>mm</span><input id="finalLegLength" type="number" min="10" step="1" value="150"></label>
+          <p class="field-help">Distance from the leg pivot to the foot path.</p>
+        </section>
+        <section>
+          <h2>Mechanism placement</h2>
+          <label>Cam centre to leg pivot <span>mm</span><input id="pivotDistance" type="number" min="5" step="1" value="80"></label>
+          <p class="field-help">Radial spacing from the rotating shaft axis to the fixed pivot. It is not another linkage.</p>
+          <label>Contact ball to leg pivot <span>mm</span><input id="armLength" type="number" min="2" step="1" value="40"></label>
+          <p class="field-help">Length of the short cam-side portion of the same straight leg.</p>
+          <div class="mechanism-summary" id="mechanismSummary">Pivot X −80 mm · Contact ball X −40 mm</div>
+        </section>
+        <section>
+          <h2>Printing fit</h2>
+          <label>Contact-ball diameter <span>mm</span><input id="ballDiameter" type="number" min="1" step="0.1" value="5"></label>
+          <label>Groove clearance <span>mm</span><input id="printClearance" type="number" min="0" step="0.05" value="0.25"></label>
+          <label>Outer edge thickness <span>mm</span><input id="edgeMargin" type="number" min="0.5" step="0.1" value="2.3"></label>
+        </section>
+        <section>
+          <button class="apply-button" id="applyButton">Apply changes to preview</button>
+          <p class="apply-state" id="applyState">Current values are shown in the preview.</p>
+        </section>
+        <section>
+          <h2>Motion preview</h2>
+          <div class="motion-controls">
+            <div class="motion-buttons"><button id="playButton" aria-pressed="false">▶ Play</button><button id="faceViewButton">Face view</button></div>
+            <label>Cam rotation <span id="phaseValue">0°</span><input id="phaseSlider" type="range" min="0" max="359" value="0" step="1"></label>
+          </div>
+        </section>
+        <section class="guardrails" id="guardrailPanel">
+          <h2>Design check</h2>
+          <div><span id="designStateDot" class="check-dot"></span><strong id="designState">Waiting for curve</strong></div>
+          <p id="legRule">Leg length scales the path; it does not change its angular motion.</p>
+          <p id="orientationRule">The straight-leg orientation will be checked from the curve.</p>
+          <p id="pivotRule">Close the curve to calculate a safe pivot range.</p>
+          <p id="camEstimate">Cam size will appear here.</p>
+        </section>
+      </aside>
+    </section>
+
+    <footer class="actionbar">
+      <p id="message">Draw one continuous path, then close the loop.</p>
+      <div class="actions" id="drawActions">
+        <button class="secondary" id="downloadButton" disabled>Curve CSV</button>
+        <button class="secondary" id="downloadTxtButton" disabled>Curve TXT</button>
+        <button class="primary" id="continueButton" disabled>Continue to mechanism</button>
+      </div>
+      <div class="actions" id="mechanismActions" hidden>
+        <button class="secondary" id="backButton">Back to curve</button>
+        <button class="secondary" id="revealButton" hidden>Show output in Finder</button>
+        <button class="primary" id="generateButton" disabled>Generate CAM STEP</button>
+      </div>
+    </footer>
+  </main>
+  <script src="sphere-sketcher.js?v=10"></script>
+</body>
+</html>

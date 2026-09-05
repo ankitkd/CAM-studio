@@ -1,0 +1,17 @@
+# Local build products
+/build/
+/dist/
+
+# User designs and generated manufacturing files
+/exports/
+*.step
+*.stp
+*.stl
+*.3mf
+
+# Local/editor files
+.DS_Store
+__pycache__/
+*.py[cod]
+.idea/
+.vscode/

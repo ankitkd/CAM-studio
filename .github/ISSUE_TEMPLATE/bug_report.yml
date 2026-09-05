@@ -1,0 +1,40 @@
+name: Bug report
+description: Report a CamStudio launch, preview, or STEP-generation problem
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for helping improve this experimental tool. Please remove usernames or private paths from screenshots.
+  - type: input
+    id: macos
+    attributes:
+      label: macOS version and Mac type
+      description: Example — macOS 15.1, Apple silicon M2
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: CamStudio version or download date
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: What did you do?
+      description: Include the values entered and the buttons pressed.
+    validations:
+      required: true
+  - type: textarea
+    id: result
+    attributes:
+      label: What happened, and what did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: terminal
+    attributes:
+      label: Terminal error text
+      description: Paste text rather than only a screenshot when possible.
+      render: shell
