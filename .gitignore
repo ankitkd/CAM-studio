@@ -15,3 +15,6 @@ __pycache__/
 *.py[cod]
 .idea/
 .vscode/
+
+# Accidental GitHub Desktop repository created inside this project
+/CAM studio/
